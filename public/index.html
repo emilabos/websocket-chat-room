@@ -1,0 +1,102 @@
+<!-- public/index.html -->
+<!DOCTYPE html>
+<html lang="hu">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Valós idejű Chat</title>
+    <style>
+      #chat-box {
+        width: 300px;
+        height: 400px;
+        border: 1px solid #ccc;
+        overflow-y: scroll;
+        padding: 10px;
+      }
+      .message {
+        margin: 5px 0;
+        padding: 8px;
+        border-radius: 5px;
+        background-color: #f1f1f1;
+      }
+      #message-input {
+        width: calc(100% - 22px);
+        padding: 10px;
+        margin-top: 10px;
+      }
+      #send-btn {
+        padding: 10px 15px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="chat-box"></div>
+    <input type="text" id="message-input" placeholder="Írj egy üzenetet..." />
+    <button id="send-btn">Küldés</button>
+    <button
+      id="leave"
+      onclick="() => {eraseCookie('username');location.reload();}"
+    >
+      leave
+    </button>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      const chatBox = document.getElementById("chat-box");
+      const messageInput = document.getElementById("message-input");
+      const sendBtn = document.getElementById("send-btn");
+
+      function addMessage(message) {
+        const messageElement = document.createElement("div");
+        messageElement.className = "message";
+        messageElement.textContent = message;
+        chatBox.appendChild(messageElement);
+        chatBox.scrollTop = chatBox.scrollHeight;
+      }
+
+      function getCookie(cookiename) {
+        const cookiestring = RegExp(cookiename + "=[^;]+").exec(
+          document.cookie
+        );
+        return decodeURIComponent(
+          cookiestring ? cookiestring.toString().replace(/^[^=]+./, "") : ""
+        );
+      }
+
+      function addCookie(cookie) {
+        document.cookie += cookie;
+      }
+
+      function eraseCookie(cookie) {
+        document.cookie = "";
+      }
+
+      window.onload = () => {
+        let username;
+        username = prompt("Username: ");
+        const socket = io();
+        console.log(socket);
+        socket.emit("set-user", username);
+        console.log("sent");
+
+        sendBtn.addEventListener("click", () => {
+          const message = messageInput.value.trim();
+          if (message) {
+            socket.emit("chat message", message);
+            messageInput.value = "";
+          }
+        });
+
+        messageInput.addEventListener("keypress", (e) => {
+          if (e.key === "Enter") {
+            sendBtn.click();
+          }
+        });
+
+        socket.on("chat message", (msg) => {
+          addMessage(msg);
+        });
+      };
+    </script>
+  </body>
+</html>
