@@ -1,2 +1,1 @@
-curl https://deno.land/install.ps1 -o install.ps1
-.\install.ps1
+Set-ExecutionPolicy Bypass -Scope Process
